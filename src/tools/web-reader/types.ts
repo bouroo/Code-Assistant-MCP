@@ -1,6 +1,6 @@
 export interface WebReaderInput {
   url: string;
-  returnFormat?: 'markdown' | 'text' | 'json';
+  returnFormat?: "markdown" | "text" | "json";
   retainImages?: boolean;
   withLinksSummary?: boolean;
   withImagesSummary?: boolean;
@@ -22,7 +22,7 @@ export interface WebReaderOutput {
   url: string;
   title?: string;
   content: string;
-  format: 'markdown' | 'text' | 'json';
+  format: "markdown" | "text" | "json";
   metadata?: {
     description?: string;
     author?: string;

@@ -14,20 +14,20 @@ This MCP server enables AI assistants like Claude and Cursor to perform real-wor
 
 ## Features
 
-| Tool | Description |
-|------|-------------|
-| **web_search** | Search the web using DuckDuckGo API with region filtering, safe search options, and time range selection |
-| **docs_search** | Search GitHub repositories for code, issues, discussions, or README content with syntax highlighting |
-| **web_reader** | Fetch webpages and convert to markdown, text, or JSON with metadata extraction |
-| **code_execute** | Execute JavaScript, TypeScript, Python, Bash, or SQL code in a sandboxed environment |
-| **file_operations** | Perform file system operations (read, write, list, delete, exists, stat) within allowed paths |
+| Tool                | Description                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| **web_search**      | Search the web using DuckDuckGo API with region filtering, safe search options, and time range selection |
+| **docs_search**     | Search GitHub repositories for code, issues, discussions, or README content with syntax highlighting     |
+| **web_reader**      | Fetch webpages and convert to markdown, text, or JSON with metadata extraction                           |
+| **code_execute**    | Execute JavaScript, TypeScript, Python, Bash, or SQL code in a sandboxed environment                     |
+| **file_operations** | Perform file system operations (read, write, list, delete, exists, stat) within allowed paths            |
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- npm or yarn
+- Bun >= 1.0.0
+- [Install Bun](https://bun.sh)
 
 ### Steps
 
@@ -40,7 +40,7 @@ This MCP server enables AI assistants like Claude and Cursor to perform real-wor
 2. **Install dependencies**
 
    ```bash
-   npm install
+   bun install
    ```
 
 3. **Copy the environment configuration**
@@ -56,13 +56,13 @@ This MCP server enables AI assistants like Claude and Cursor to perform real-wor
 5. **Build the project**
 
    ```bash
-   npm run build
+   bun run build
    ```
 
 6. **Start the server**
 
    ```bash
-   npm start
+   bun start
    ```
 
 ## Configuration
@@ -71,41 +71,41 @@ All configuration is done via environment variables. Copy `.env.example` to `.en
 
 ### GitHub Configuration
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `GITHUB_TOKEN` | string | — | Optional GitHub API token for higher rate limits. Get one at https://github.com/settings/tokens |
+| Variable       | Type   | Default | Description                                                                                     |
+| -------------- | ------ | ------- | ----------------------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN` | string | —       | Optional GitHub API token for higher rate limits. Get one at https://github.com/settings/tokens |
 
 ### Logging Configuration
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `LOG_LEVEL` | enum | `info` | Log level: `debug`, `info`, `warn`, `error` |
+| Variable    | Type | Default | Description                                 |
+| ----------- | ---- | ------- | ------------------------------------------- |
+| `LOG_LEVEL` | enum | `info`  | Log level: `debug`, `info`, `warn`, `error` |
 
 ### Rate Limiting
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `RATE_LIMIT_REQUESTS` | number | `100` | Maximum requests allowed per window |
+| Variable               | Type   | Default | Description                                           |
+| ---------------------- | ------ | ------- | ----------------------------------------------------- |
+| `RATE_LIMIT_REQUESTS`  | number | `100`   | Maximum requests allowed per window                   |
 | `RATE_LIMIT_WINDOW_MS` | number | `60000` | Rate limit window in milliseconds (default: 1 minute) |
 
 ### HTTP Fetcher Settings
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `FETCH_TIMEOUT_MS` | number | `30000` | HTTP request timeout in milliseconds |
-| `FETCH_RETRIES` | number | `3` | Number of retry attempts for failed requests |
+| Variable           | Type   | Default | Description                                  |
+| ------------------ | ------ | ------- | -------------------------------------------- |
+| `FETCH_TIMEOUT_MS` | number | `30000` | HTTP request timeout in milliseconds         |
+| `FETCH_RETRIES`    | number | `3`     | Number of retry attempts for failed requests |
 
 ### Code Execution Sandbox
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `SANDBOX_ENABLED` | boolean | `true` | Enable or disable code execution |
-| `SANDBOX_TIMEOUT_MS` | number | `10000` | Maximum execution time in milliseconds |
+| Variable             | Type    | Default | Description                            |
+| -------------------- | ------- | ------- | -------------------------------------- |
+| `SANDBOX_ENABLED`    | boolean | `true`  | Enable or disable code execution       |
+| `SANDBOX_TIMEOUT_MS` | number  | `10000` | Maximum execution time in milliseconds |
 
 ### File Operations
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
+| Variable        | Type   | Default  | Description                                                    |
+| --------------- | ------ | -------- | -------------------------------------------------------------- |
 | `ALLOWED_PATHS` | string | `.,/tmp` | Comma-separated list of allowed base paths for file operations |
 
 ## Usage with Claude Desktop
@@ -120,7 +120,7 @@ To use this MCP server with Claude Desktop, add it to your Claude configuration:
 {
   "mcpServers": {
     "coder-agent-mcp": {
-      "command": "node",
+      "command": "bun",
       "args": ["/path/to/coder-agent-mcp/dist/index.js"],
       "env": {
         "LOG_LEVEL": "info",
@@ -143,7 +143,7 @@ To use this MCP server with Cursor:
 
 ```json
 {
-  "command": "node",
+  "command": "bun",
   "args": ["/path/to/coder-agent-mcp/dist/index.js"],
   "env": {
     "LOG_LEVEL": "info",
@@ -276,23 +276,27 @@ Perform file system operations on allowed paths.
 ### ⚠️ Important Warnings
 
 **Code Execution**
+
 - Code execution runs with the same permissions as the Node.js process
 - Never expose this server to untrusted networks
 - Always review code before execution
 - Set appropriate `SANDBOX_TIMEOUT_MS` to prevent runaway processes
 
 **File Operations**
+
 - File operations are restricted to paths specified in `ALLOWED_PATHS`
 - The server validates all paths against allowed directories
 - Be cautious when allowing write operations to sensitive directories
 - Default allowed paths: `.` (current directory) and `/tmp`
 
 **Rate Limiting**
+
 - Rate limiting is enabled by default (100 requests per minute)
 - Adjust `RATE_LIMIT_REQUESTS` and `RATE_LIMIT_WINDOW_MS` as needed
 - Consider setting stricter limits in production environments
 
 **Network Requests**
+
 - All external network requests have configurable timeouts
 - The server retries failed requests up to `FETCH_RETRIES` times
 - Review URLs before fetching to avoid malicious content
@@ -301,29 +305,29 @@ Perform file system operations on allowed paths.
 
 ### Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run build` | Compile TypeScript to JavaScript |
-| `npm run dev` | Run in development mode with hot reload |
-| `npm run start` | Start the production server |
-| `npm run typecheck` | Run TypeScript type checking |
-| `npm test` | Run test suite |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run lint` | Run ESLint |
+| Script               | Description                             |
+| -------------------- | --------------------------------------- |
+| `bun run build`      | Compile TypeScript to JavaScript        |
+| `bun run dev`        | Run in development mode with hot reload |
+| `bun run start`      | Start the production server             |
+| `bun run typecheck`  | Run TypeScript type checking            |
+| `bun test`           | Run test suite                          |
+| `bun run test:watch` | Run tests in watch mode                 |
+| `bun run lint`       | Run ESLint                              |
 
 ### Development Mode
 
 For active development with auto-reload:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ### Building for Production
 
 ```bash
-npm run build
-npm start
+bun run build
+bun start
 ```
 
 ## License

@@ -1,8 +1,8 @@
 export interface DocsSearchInput {
   repoName: string;
   query: string;
-  searchType?: 'code' | 'issues' | 'discussions' | 'readme';
-  language?: 'en' | 'zh' | 'ja' | 'ko' | 'es' | 'fr' | 'de';
+  searchType?: "code" | "issues" | "discussions" | "readme";
+  language?: "en" | "zh" | "ja" | "ko" | "es" | "fr" | "de";
 }
 
 export interface SearchResult {
@@ -21,11 +21,15 @@ export interface FileContent {
 
 export interface RepoStructureItem {
   path: string;
-  type: 'file' | 'dir';
+  type: "file" | "dir";
   name: string;
 }
 
-export type DocsSearchOutput = 
-  | { type: 'search_results'; results: SearchResult[]; totalResults: number }
-  | { type: 'file_content'; file: FileContent }
-  | { type: 'directory_structure'; structure: RepoStructureItem[]; path: string };
+export type DocsSearchOutput =
+  | { type: "search_results"; results: SearchResult[]; totalResults: number }
+  | { type: "file_content"; file: FileContent }
+  | {
+      type: "directory_structure";
+      structure: RepoStructureItem[];
+      path: string;
+    };

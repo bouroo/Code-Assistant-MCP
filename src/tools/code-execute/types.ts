@@ -1,6 +1,6 @@
 export interface CodeExecuteInput {
   code: string;
-  language: 'javascript' | 'typescript' | 'python' | 'bash' | 'sql';
+  language: "javascript" | "typescript" | "python" | "bash" | "sql";
   timeout?: number;
   input?: string;
   files?: Record<string, string>;

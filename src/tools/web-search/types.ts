@@ -2,8 +2,8 @@ export interface WebSearchInput {
   query: string;
   maxResults?: number;
   region?: string;
-  safeSearch?: 'strict' | 'moderate' | 'off';
-  timeRange?: 'day' | 'week' | 'month' | 'year' | 'all';
+  safeSearch?: "strict" | "moderate" | "off";
+  timeRange?: "day" | "week" | "month" | "year" | "all";
 }
 
 export interface WebSearchResult {
