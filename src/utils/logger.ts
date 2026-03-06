@@ -1,60 +1,54 @@
-type LogLevel = "debug" | "info" | "warn" | "error";
+import pino from "pino";
+import { mkdirSync, existsSync } from "fs";
+import { dirname } from "path";
+import type { Config } from "../config/schema";
 
-interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  message: string;
-  data?: unknown;
-}
+export function createLogger(config: Config) {
+  const streams: pino.StreamEntry[] = [];
 
-class Logger {
-  private level: LogLevel;
-  private levels: Record<LogLevel, number> = {
-    debug: 0,
-    info: 1,
-    warn: 2,
-    error: 3,
-  };
-
-  constructor(level: LogLevel = "info") {
-    this.level = level;
+  // Pretty-printed stdout for development
+  if (config.logging.prettyPrint) {
+    streams.push({
+      level: config.logging.level,
+      stream: pino.transport({
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "HH:MM:ss",
+          ignore: "pid,hostname",
+        },
+      }),
+    });
+  } else {
+    streams.push({
+      level: config.logging.level,
+      stream: process.stdout,
+    });
   }
 
-  setLevel(level: LogLevel): void {
-    this.level = level;
-  }
-
-  debug(message: string, data?: unknown): void {
-    this.log("debug", message, data);
-  }
-
-  info(message: string, data?: unknown): void {
-    this.log("info", message, data);
-  }
-
-  warn(message: string, data?: unknown): void {
-    this.log("warn", message, data);
-  }
-
-  error(message: string, data?: unknown): void {
-    this.log("error", message, data);
-  }
-
-  private log(level: LogLevel, message: string, data?: unknown): void {
-    if (this.levels[level] < this.levels[this.level]) {
-      return;
+  // File logging for production
+  if (config.logging.file.enabled) {
+    const logDir = dirname(config.logging.file.path);
+    if (!existsSync(logDir)) {
+      mkdirSync(logDir, { recursive: true });
     }
 
-    const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      ...(data !== undefined && { data }),
-    };
-
-    // Write to stderr to not interfere with stdio MCP communication
-    process.stderr.write(JSON.stringify(entry) + "\n");
+    streams.push({
+      level: config.logging.level,
+      stream: pino.destination({
+        dest: config.logging.file.path,
+        sync: false,
+      }),
+    });
   }
+
+  return pino(
+    {
+      name: config.server.name,
+      level: config.logging.level,
+    },
+    pino.multistream(streams),
+  );
 }
 
-export const logger = new Logger((process.env.LOG_LEVEL as LogLevel) ?? "info");
+export type Logger = ReturnType<typeof createLogger>;

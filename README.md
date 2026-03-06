@@ -1,339 +1,344 @@
-# Coder Agent MCP Server
+# Code Assistant MCP Server
 
-A lightweight Model Context Protocol (MCP) server that provides AI coding assistants with powerful tools for web search, documentation lookup, code execution, and file operations. Built with TypeScript and the official MCP SDK.
-
-## Description
-
-This MCP server enables AI assistants like Claude and Cursor to perform real-world coding tasks by exposing a comprehensive set of tools:
-
-- **Web Search** — Search the web using DuckDuckGo for latest documentation, tutorials, and technical information
-- **Docs Search** — Search GitHub repositories for code, issues, discussions, and README files
-- **Web Reader** — Fetch and parse webpages into clean markdown or text format
-- **Code Execution** — Run code in multiple languages with configurable timeouts
-- **File Operations** — Safely read, write, list, and manage files within allowed directories
+A production-ready Model Context Protocol (MCP) server that provides AI assistants with comprehensive tooling capabilities for performing real-world coding tasks.
 
 ## Features
 
-| Tool                | Description                                                                                              |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| **web_search**      | Search the web using DuckDuckGo API with region filtering, safe search options, and time range selection |
-| **docs_search**     | Search GitHub repositories for code, issues, discussions, or README content with syntax highlighting     |
-| **web_reader**      | Fetch webpages and convert to markdown, text, or JSON with metadata extraction                           |
-| **code_execute**    | Execute JavaScript, TypeScript, Python, Bash, or SQL code in a sandboxed environment                     |
-| **file_operations** | Perform file system operations (read, write, list, delete, exists, stat) within allowed paths            |
+- **Web Search Tool**: DuckDuckGo integration for searching documentation, tutorials, and technical information
+- **Documentation Search Tool**: GitHub repository search for code, documentation, and README files
+- **Web Reader Tool**: Fetch and parse webpages into clean markdown or plain text format
+- **Code Execution Tool**: Secure multi-language sandbox (JavaScript, TypeScript, Python, Bash)
+- **File Operations Tool**: Safe file management with path validation and security controls
 
-## Installation
+## Quick Start
 
 ### Prerequisites
 
-- Bun >= 1.0.0
-- [Install Bun](https://bun.sh)
+- [Bun](https://bun.sh) >= 1.0.0
+- GitHub token (optional, for higher rate limits)
 
-### Steps
+### Installation
 
-1. **Clone the repository**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd code-assistant-mcp
 
-   ```bash
-   cd coder-agent-mcp
-   ```
+# Install dependencies
+bun install
 
-2. **Install dependencies**
+# Copy environment template
+cp .env.example .env
 
-   ```bash
-   bun install
-   ```
+# Edit .env with your configuration
+# (Optional) Add your GitHub token for higher API rate limits
+```
 
-3. **Copy the environment configuration**
+### Running the Server
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+# Development mode with hot reload
+bun run dev
 
-4. **Configure your environment**
+# Production mode
+bun run start
 
-   Edit the `.env` file with your preferred settings (see Configuration section below).
+# Run tests
+bun run test
 
-5. **Build the project**
-
-   ```bash
-   bun run build
-   ```
-
-6. **Start the server**
-
-   ```bash
-   bun start
-   ```
+# Run tests with coverage
+bun run test:coverage
+```
 
 ## Configuration
 
-All configuration is done via environment variables. Copy `.env.example` to `.env` and modify as needed.
+Configuration can be provided through:
 
-### GitHub Configuration
+1. Environment variables (highest priority)
+2. Configuration file (`config/mcp-config.json`)
+3. Default values (lowest priority)
 
-| Variable       | Type   | Default | Description                                                                                     |
-| -------------- | ------ | ------- | ----------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN` | string | —       | Optional GitHub API token for higher rate limits. Get one at https://github.com/settings/tokens |
+### Environment Variables
 
-### Logging Configuration
+See `.env.example` for all available options:
 
-| Variable    | Type | Default | Description                                 |
-| ----------- | ---- | ------- | ------------------------------------------- |
-| `LOG_LEVEL` | enum | `info`  | Log level: `debug`, `info`, `warn`, `error` |
+```bash
+# Server settings
+MCP_SERVER_NAME=code-assistant-mcp
+MCP_SERVER_VERSION=1.0.0
+
+# Transport settings
+MCP_TRANSPORT_STDIO=true
+MCP_TRANSPORT_HTTP=false
+MCP_HTTP_PORT=3000
+
+# GitHub token for doc-search tool
+GITHUB_TOKEN=ghp_your_token_here
+
+# HTTP authentication (optional)
+MCP_HTTP_AUTH_ENABLED=false
+MCP_HTTP_API_KEY=your_api_key_here
+
+# Logging
+LOG_LEVEL=info
+
+# Allowed directories for file operations
+MCP_ALLOWED_DIRS=/path/to/project1,/path/to/project2
+```
+
+### Configuration File
+
+See `config/mcp-config.json` for detailed configuration options.
+
+## Tools
+
+### 1. Web Search (`web-search`)
+
+Search the web using DuckDuckGo for documentation, tutorials, and technical information.
+
+**Parameters:**
+
+- `query` (string, required): Search query
+- `maxResults` (number, optional): Max results to return (1-50, default: 10)
+
+**Example:**
+
+```json
+{
+  "query": "TypeScript async await tutorial",
+  "maxResults": 5
+}
+```
+
+### 2. Documentation Search (`doc-search`)
+
+Search GitHub repositories for code, documentation, and README files.
+
+**Parameters:**
+
+- `query` (string, required): Search query
+- `type` (enum, optional): Search type - `code`, `repos`, or `files` (default: `code`)
+- `repository` (string, optional): Specific repository (format: `owner/repo`)
+- `language` (string, optional): Filter by programming language
+- `maxResults` (number, optional): Max results to return (1-100, default: 20)
+
+**Example:**
+
+```json
+{
+  "query": "express middleware",
+  "type": "code",
+  "language": "typescript",
+  "maxResults": 10
+}
+```
+
+### 3. Web Reader (`web-reader`)
+
+Fetch and parse webpages into clean markdown or plain text format.
+
+**Parameters:**
+
+- `url` (string, required): URL to fetch
+- `format` (enum, optional): Output format - `markdown` or `text` (default: `markdown`)
+- `timeout` (number, optional): Request timeout in milliseconds
+- `maxWidth` (number, optional): Max line width for text format (default: 80)
+
+**Example:**
+
+```json
+{
+  "url": "https://example.com/docs",
+  "format": "markdown"
+}
+```
+
+### 4. Code Execution (`code-exec`)
+
+Execute code in a secure sandbox with timeout and resource limits.
+
+**Parameters:**
+
+- `code` (string, required): Code to execute (max 1MB)
+- `language` (enum, required): Programming language - `javascript`, `typescript`, `python`, or `bash`
+- `timeout` (number, optional): Execution timeout in milliseconds (1s - 2min)
+- `memoryLimit` (number, optional): Memory limit in MB (16MB - 1GB)
+
+**Example:**
+
+```json
+{
+  "code": "console.log('Hello, World!');",
+  "language": "javascript",
+  "timeout": 30000
+}
+```
+
+### 5. File Operations (`file-ops`)
+
+Perform file operations with strict path validation and security controls.
+
+**Parameters:**
+
+- `operation` (enum, required): Operation type - `read`, `write`, `append`, `list`, `mkdir`, `copy`, `move`, `delete`
+- `path` (string, required): File or directory path
+- `content` (string, optional): Content for write/append operations
+- `destination` (string, optional): Destination path for copy/move operations
+- `encoding` (enum, optional): File encoding - `utf-8`, `binary`, or `base64` (default: `utf-8`)
+- `recursive` (boolean, optional): Recursive operation for directories
+
+**Examples:**
+
+Read a file:
+
+```json
+{
+  "operation": "read",
+  "path": "src/index.ts"
+}
+```
+
+Write a file:
+
+```json
+{
+  "operation": "write",
+  "path": "output.txt",
+  "content": "Hello, World!"
+}
+```
+
+List directory:
+
+```json
+{
+  "operation": "list",
+  "path": "src"
+}
+```
+
+## Security
+
+### Path Validation
+
+All file operations are restricted to allowed directories (configured via `MCP_ALLOWED_DIRS` or `config.tools.fileOps.allowedDirectories`). Path traversal attempts (e.g., `../../../etc/passwd`) are blocked.
+
+### Code Execution
+
+Code execution runs in isolated child processes with:
+
+- Configurable timeouts (default: 30s)
+- Memory limits (default: 256MB)
+- Clean environment (no inherited env vars)
+- Output size limits (1MB)
 
 ### Rate Limiting
 
-| Variable               | Type   | Default | Description                                           |
-| ---------------------- | ------ | ------- | ----------------------------------------------------- |
-| `RATE_LIMIT_REQUESTS`  | number | `100`   | Maximum requests allowed per window                   |
-| `RATE_LIMIT_WINDOW_MS` | number | `60000` | Rate limit window in milliseconds (default: 1 minute) |
+HTTP transport includes rate limiting (default: 100 requests/minute per client IP).
 
-### HTTP Fetcher Settings
+### Authentication
 
-| Variable           | Type   | Default | Description                                  |
-| ------------------ | ------ | ------- | -------------------------------------------- |
-| `FETCH_TIMEOUT_MS` | number | `30000` | HTTP request timeout in milliseconds         |
-| `FETCH_RETRIES`    | number | `3`     | Number of retry attempts for failed requests |
+Optional API key authentication for HTTP transport:
 
-### Code Execution Sandbox
-
-| Variable             | Type    | Default | Description                            |
-| -------------------- | ------- | ------- | -------------------------------------- |
-| `SANDBOX_ENABLED`    | boolean | `true`  | Enable or disable code execution       |
-| `SANDBOX_TIMEOUT_MS` | number  | `10000` | Maximum execution time in milliseconds |
-
-### File Operations
-
-| Variable        | Type   | Default  | Description                                                    |
-| --------------- | ------ | -------- | -------------------------------------------------------------- |
-| `ALLOWED_PATHS` | string | `.,/tmp` | Comma-separated list of allowed base paths for file operations |
-
-## Usage with Claude Desktop
-
-To use this MCP server with Claude Desktop, add it to your Claude configuration:
-
-1. Open Claude Desktop settings
-2. Navigate to Developer > Edit Config
-3. Add the following to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "coder-agent-mcp": {
-      "command": "bun",
-      "args": ["/path/to/coder-agent-mcp/dist/index.js"],
-      "env": {
-        "LOG_LEVEL": "info",
-        "ALLOWED_PATHS": ".,/tmp"
-      }
-    }
-  }
-}
+```bash
+MCP_HTTP_AUTH_ENABLED=true
+MCP_HTTP_API_KEY=your_secret_key
 ```
 
-Replace `/path/to/coder-agent-mcp` with the actual path to your installation.
+Include the key in requests:
 
-## Usage with Cursor
-
-To use this MCP server with Cursor:
-
-1. Open Cursor settings
-2. Navigate to Features > MCP Servers
-3. Add a new MCP server with the following configuration:
-
-```json
-{
-  "command": "bun",
-  "args": ["/path/to/coder-agent-mcp/dist/index.js"],
-  "env": {
-    "LOG_LEVEL": "info",
-    "ALLOWED_PATHS": ".,/tmp"
-  }
-}
+```
+Authorization: Bearer your_secret_key
 ```
 
-## Tool Reference
+## Transports
 
-### web_search
+### Stdio (Default)
 
-Search the web using DuckDuckGo.
+For local integration with Claude Desktop, Cursor, and other MCP clients:
 
-```typescript
-// Example input
-{
-  query: "TypeScript generics tutorial",
-  maxResults: 10,
-  region: "us-en",
-  safeSearch: "moderate",
-  timeRange: "month"
-}
+```bash
+bun run start
 ```
 
-### docs_search
+### HTTP
 
-Search GitHub repositories for code, issues, discussions, or README files.
+For remote access and web-based clients:
 
-```typescript
-// Example input - search code
-{
-  repoName: "microsoft/vscode",
-  query: "function getWorkspaceFolder",
-  searchType: "code"
-}
+```bash
+# Enable HTTP in .env
+MCP_TRANSPORT_HTTP=true
+MCP_HTTP_PORT=3000
 
-// Example input - search issues
-{
-  repoName: "facebook/react",
-  query: "memory leak useEffect",
-  searchType: "issues"
-}
+# Start server
+bun run start
 ```
 
-### web_reader
+Endpoints:
 
-Fetch and parse webpages into various formats.
-
-```typescript
-// Example input
-{
-  url: "https://www.typescriptlang.org/docs/handbook/2/generics.html",
-  returnFormat: "markdown",
-  retainImages: true,
-  withLinksSummary: true,
-  timeout: 30
-}
-```
-
-### code_execute
-
-Execute code in a sandboxed environment.
-
-```typescript
-// Example input - JavaScript
-{
-  code: "const sum = (a, b) => a + b;\nconsole.log(sum(2, 3));",
-  language: "javascript",
-  timeout: 10
-}
-
-// Example input - Python
-{
-  code: "def fib(n):\n    if n <= 1:\n        return n\n    return fib(n-1) + fib(n-2)\nprint(fib(10))",
-  language: "python",
-  timeout: 10
-}
-```
-
-### file_operations
-
-Perform file system operations on allowed paths.
-
-```typescript
-// Read a file
-{
-  operation: "read",
-  path: "./src/index.ts",
-  encoding: "utf-8"
-}
-
-// Write to a file
-{
-  operation: "write",
-  path: "./output.txt",
-  content: "Hello, World!"
-}
-
-// List directory contents
-{
-  operation: "list",
-  path: "./src",
-  recursive: true,
-  pattern: "*.ts"
-}
-
-// Check if file exists
-{
-  operation: "exists",
-  path: "./package.json"
-}
-
-// Get file stats
-{
-  operation: "stat",
-  path: "./README.md"
-}
-
-// Delete a file
-{
-  operation: "delete",
-  path: "./temp.txt",
-  recursive: false
-}
-```
-
-## Security Considerations
-
-### ⚠️ Important Warnings
-
-**Code Execution**
-
-- Code execution runs with the same permissions as the Node.js process
-- Never expose this server to untrusted networks
-- Always review code before execution
-- Set appropriate `SANDBOX_TIMEOUT_MS` to prevent runaway processes
-
-**File Operations**
-
-- File operations are restricted to paths specified in `ALLOWED_PATHS`
-- The server validates all paths against allowed directories
-- Be cautious when allowing write operations to sensitive directories
-- Default allowed paths: `.` (current directory) and `/tmp`
-
-**Rate Limiting**
-
-- Rate limiting is enabled by default (100 requests per minute)
-- Adjust `RATE_LIMIT_REQUESTS` and `RATE_LIMIT_WINDOW_MS` as needed
-- Consider setting stricter limits in production environments
-
-**Network Requests**
-
-- All external network requests have configurable timeouts
-- The server retries failed requests up to `FETCH_RETRIES` times
-- Review URLs before fetching to avoid malicious content
+- `POST /mcp` - MCP protocol endpoint
+- `GET /health` - Health check
 
 ## Development
 
-### Available Scripts
-
-| Script               | Description                             |
-| -------------------- | --------------------------------------- |
-| `bun run build`      | Compile TypeScript to JavaScript        |
-| `bun run dev`        | Run in development mode with hot reload |
-| `bun run start`      | Start the production server             |
-| `bun run typecheck`  | Run TypeScript type checking            |
-| `bun test`           | Run test suite                          |
-| `bun run test:watch` | Run tests in watch mode                 |
-| `bun run lint`       | Run ESLint                              |
-
-### Development Mode
-
-For active development with auto-reload:
-
 ```bash
+# Run with hot reload
 bun run dev
-```
 
-### Building for Production
+# Run tests
+bun run test
 
-```bash
+# Run tests in watch mode
+bun run test:watch
+
+# Type check
+bun run lint
+
+# Build for production
 bun run build
-bun start
 ```
+
+## Project Structure
+
+```
+code-assistant-mcp/
+├── src/
+│   ├── config/          # Configuration management
+│   ├── types/           # TypeScript type definitions
+│   ├── utils/           # Utility functions
+│   ├── tools/           # Tool implementations
+│   ├── transports/      # Transport implementations
+│   ├── middleware/      # Middleware (rate limiting, etc.)
+│   ├── server.ts        # MCP server setup
+│   └── index.ts         # Entry point
+├── tests/
+│   ├── unit/            # Unit tests
+│   └── integration/     # Integration tests
+├── config/
+│   └── mcp-config.json  # Configuration file
+├── logs/                # Log files
+├── .env                 # Environment variables
+└── package.json
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details
 
----
+## Support
 
-Made with TypeScript and the [Model Context Protocol SDK](https://github.com/modelcontextprotocol)
+For issues and feature requests, please use the GitHub issue tracker.
+
+## Acknowledgments
+
+- [Model Context Protocol](https://modelcontextprotocol.io/) - The protocol specification
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) - Official SDK
+- [Bun](https://bun.sh) - Fast JavaScript runtime

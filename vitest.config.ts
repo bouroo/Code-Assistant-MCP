@@ -4,21 +4,16 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    setupFiles: ["./src/__tests__/setup.ts"],
+    include: ["tests/**/*.{test,spec}.{js,ts}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/",
-        "dist/",
-        "src/__tests__/",
-        "**/*.config.ts",
-        "**/*.d.ts",
-      ],
+      exclude: ["node_modules/", "tests/", "**/*.d.ts", "**/*.config.*"],
     },
-    include: ["src/__tests__/**/*.test.ts"],
-    exclude: ["node_modules", "dist"],
-    testTimeout: 10000,
-    hookTimeout: 10000,
+  },
+  resolve: {
+    alias: {
+      zod: "zod",
+    },
   },
 });

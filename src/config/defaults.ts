@@ -1,0 +1,73 @@
+import type { Config } from "./schema";
+
+export const defaults: Config = {
+  server: {
+    name: "code-assistant-mcp",
+    version: "1.0.0",
+    description: "Production-ready MCP server for AI coding assistants",
+  },
+
+  transport: {
+    stdio: true,
+    http: {
+      enabled: false,
+      port: 3000,
+      host: "localhost",
+      auth: {
+        enabled: false,
+      },
+    },
+  },
+
+  tools: {
+    webSearch: {
+      enabled: true,
+      timeout: 10000,
+      maxResults: 10,
+    },
+
+    docSearch: {
+      enabled: true,
+      timeout: 15000,
+      maxResults: 20,
+    },
+
+    webReader: {
+      enabled: true,
+      timeout: 15000,
+      maxSize: 5 * 1024 * 1024,
+    },
+
+    codeExec: {
+      enabled: true,
+      timeout: 30000,
+      memoryLimit: 256,
+      languages: ["javascript", "typescript", "python", "bash"],
+    },
+
+    fileOps: {
+      enabled: true,
+      allowedDirectories: ["."],
+      maxSize: 10 * 1024 * 1024,
+    },
+  },
+
+  security: {
+    rateLimit: {
+      enabled: true,
+      windowMs: 60000,
+      maxRequests: 100,
+    },
+  },
+
+  logging: {
+    level: "info",
+    prettyPrint: true,
+    file: {
+      enabled: true,
+      path: "logs/server.log",
+      maxSize: 10 * 1024 * 1024,
+      maxFiles: 5,
+    },
+  },
+};
