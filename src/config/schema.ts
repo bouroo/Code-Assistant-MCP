@@ -78,7 +78,7 @@ const securitySchema = z.object({
 });
 
 const loggingFileSchema = z.object({
-  enabled: z.boolean().default(true),
+  enabled: z.boolean().default(false),
   path: z.string().default("logs/server.log"),
   maxSize: z.number().default(10 * 1024 * 1024), // 10MB
   maxFiles: z.number().default(5),

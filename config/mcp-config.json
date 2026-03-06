@@ -54,7 +54,7 @@
     "level": "info",
     "prettyPrint": true,
     "file": {
-      "enabled": true,
+      "enabled": false,
       "path": "logs/server.log",
       "maxSize": 10485760,
       "maxFiles": 5

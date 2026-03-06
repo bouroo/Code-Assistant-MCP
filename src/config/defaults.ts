@@ -64,7 +64,7 @@ export const defaults: Config = {
     level: "info",
     prettyPrint: true,
     file: {
-      enabled: true,
+      enabled: false,
       path: "logs/server.log",
       maxSize: 10 * 1024 * 1024,
       maxFiles: 5,

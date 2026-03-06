@@ -15,9 +15,15 @@ export async function loadConfig(): Promise<Config> {
   if (existsSync(configPath)) {
     try {
       const file = Bun.file(configPath);
-      fileConfig = await file.json();
+      const content = await file.text();
+      // Only parse if content is not empty
+      if (content.trim()) {
+        fileConfig = JSON.parse(content);
+      }
     } catch (error) {
       console.warn(`Failed to load config file: ${configPath}`, error);
+      // Continue with empty fileConfig - defaults will be used
+      fileConfig = {};
     }
   }
 
