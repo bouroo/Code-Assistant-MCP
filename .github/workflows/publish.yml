@@ -70,6 +70,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
+      - name: Extract version from git tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: extract-version
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Tag version: $TAG_VERSION"
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "is_tag=true" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version from tag
+        if: steps.extract-version.outputs.is_tag == 'true'
+        run: |
+          # Update package.json with the extracted version using jq
+          jq --arg version "${{ steps.extract-version.outputs.version }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          echo "Updated package.json version to ${{ steps.extract-version.outputs.version }}"
+          cat package.json | grep '"version"'
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -77,6 +96,7 @@ jobs:
         run: bun run build
 
       - name: Check if version is already published
+        if: steps.extract-version.outputs.is_tag == 'true'
         id: check-version
         run: |
           LOCAL_VERSION=$(node -p "require('./package.json').version")
@@ -95,15 +115,21 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
-        if: steps.check-version.outputs.should_publish == 'true'
+        if: steps.extract-version.outputs.is_tag == 'true' && steps.check-version.outputs.should_publish == 'true'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish summary
+        if: steps.extract-version.outputs.is_tag == 'true'
         run: |
           if [ "${{ steps.check-version.outputs.should_publish }}" == "true" ]; then
             echo "✅ Published version ${{ steps.check-version.outputs.version }} to npm"
           else
             echo "⏭️ Skipped publishing - version ${{ steps.check-version.outputs.version }} already exists"
           fi
+
+      - name: Build summary (non-tag)
+        if: steps.extract-version.outputs.is_tag != 'true'
+        run: |
+          echo "✅ Build completed successfully (tag push required for publishing)"
