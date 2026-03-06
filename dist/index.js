@@ -5074,11 +5074,11 @@ var require_codegen = __commonJS((exports) => {
       const rhs = this.rhs === undefined ? "" : ` = ${this.rhs}`;
       return `${varKind} ${this.name}${rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (!names[this.name.str])
         return;
       if (this.rhs)
-        this.rhs = optimizeExpr(this.rhs, names, constants);
+        this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -5096,10 +5096,10 @@ var require_codegen = __commonJS((exports) => {
     render({ _n }) {
       return `${this.lhs} = ${this.rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (this.lhs instanceof code_1.Name && !names[this.lhs.str] && !this.sideEffects)
         return;
-      this.rhs = optimizeExpr(this.rhs, names, constants);
+      this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -5165,8 +5165,8 @@ var require_codegen = __commonJS((exports) => {
     optimizeNodes() {
       return `${this.code}` ? this : undefined;
     }
-    optimizeNames(names, constants) {
-      this.code = optimizeExpr(this.code, names, constants);
+    optimizeNames(names, constants2) {
+      this.code = optimizeExpr(this.code, names, constants2);
       return this;
     }
     get names() {
@@ -5196,12 +5196,12 @@ var require_codegen = __commonJS((exports) => {
       }
       return nodes.length > 0 ? this : undefined;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       const { nodes } = this;
       let i = nodes.length;
       while (i--) {
         const n = nodes[i];
-        if (n.optimizeNames(names, constants))
+        if (n.optimizeNames(names, constants2))
           continue;
         subtractNames(names, n.names);
         nodes.splice(i, 1);
@@ -5258,12 +5258,12 @@ var require_codegen = __commonJS((exports) => {
         return;
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a2;
-      this.else = (_a2 = this.else) === null || _a2 === undefined ? undefined : _a2.optimizeNames(names, constants);
-      if (!(super.optimizeNames(names, constants) || this.else))
+      this.else = (_a2 = this.else) === null || _a2 === undefined ? undefined : _a2.optimizeNames(names, constants2);
+      if (!(super.optimizeNames(names, constants2) || this.else))
         return;
-      this.condition = optimizeExpr(this.condition, names, constants);
+      this.condition = optimizeExpr(this.condition, names, constants2);
       return this;
     }
     get names() {
@@ -5288,10 +5288,10 @@ var require_codegen = __commonJS((exports) => {
     render(opts) {
       return `for(${this.iteration})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants))
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2))
         return;
-      this.iteration = optimizeExpr(this.iteration, names, constants);
+      this.iteration = optimizeExpr(this.iteration, names, constants2);
       return this;
     }
     get names() {
@@ -5329,10 +5329,10 @@ var require_codegen = __commonJS((exports) => {
     render(opts) {
       return `for(${this.varKind} ${this.name} ${this.loop} ${this.iterable})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants))
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2))
         return;
-      this.iterable = optimizeExpr(this.iterable, names, constants);
+      this.iterable = optimizeExpr(this.iterable, names, constants2);
       return this;
     }
     get names() {
@@ -5377,11 +5377,11 @@ var require_codegen = __commonJS((exports) => {
       (_b = this.finally) === null || _b === undefined || _b.optimizeNodes();
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a2, _b;
-      super.optimizeNames(names, constants);
-      (_a2 = this.catch) === null || _a2 === undefined || _a2.optimizeNames(names, constants);
-      (_b = this.finally) === null || _b === undefined || _b.optimizeNames(names, constants);
+      super.optimizeNames(names, constants2);
+      (_a2 = this.catch) === null || _a2 === undefined || _a2.optimizeNames(names, constants2);
+      (_b = this.finally) === null || _b === undefined || _b.optimizeNames(names, constants2);
       return this;
     }
     get names() {
@@ -5655,7 +5655,7 @@ var require_codegen = __commonJS((exports) => {
   function addExprNames(names, from) {
     return from instanceof code_1._CodeOrName ? addNames(names, from.names) : names;
   }
-  function optimizeExpr(expr, names, constants) {
+  function optimizeExpr(expr, names, constants2) {
     if (expr instanceof code_1.Name)
       return replaceName(expr);
     if (!canOptimize(expr))
@@ -5670,14 +5670,14 @@ var require_codegen = __commonJS((exports) => {
       return items;
     }, []));
     function replaceName(n) {
-      const c = constants[n.str];
+      const c = constants2[n.str];
       if (c === undefined || names[n.str] !== 1)
         return n;
       delete names[n.str];
       return c;
     }
     function canOptimize(e) {
-      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== undefined);
+      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants2[c.str] !== undefined);
     }
   }
   function subtractNames(names, from) {
@@ -18985,7 +18985,7 @@ var require_DOMException = __commonJS((exports, module) => {
     "INVALID_NODE_TYPE_ERR (24): the supplied node is invalid or has an invalid ancestor for this operation",
     "DATA_CLONE_ERR (25): the object can not be cloned."
   ];
-  var constants = {
+  var constants2 = {
     INDEX_SIZE_ERR,
     DOMSTRING_SIZE_ERR: 2,
     HIERARCHY_REQUEST_ERR,
@@ -19020,8 +19020,8 @@ var require_DOMException = __commonJS((exports, module) => {
     this.name = names[code];
   }
   DOMException.prototype.__proto__ = Error.prototype;
-  for (c in constants) {
-    v = { value: constants[c] };
+  for (c in constants2) {
+    v = { value: constants2[c] };
     Object.defineProperty(DOMException, c, v);
     Object.defineProperty(DOMException.prototype, c, v);
   }
@@ -38545,7 +38545,7 @@ var securitySchema = z.object({
   rateLimit: rateLimitSchema.default({})
 });
 var loggingFileSchema = z.object({
-  enabled: z.boolean().default(true),
+  enabled: z.boolean().default(false),
   path: z.string().default("logs/server.log"),
   maxSize: z.number().default(10 * 1024 * 1024),
   maxFiles: z.number().default(5)
@@ -38620,7 +38620,7 @@ var defaults = {
     level: "info",
     prettyPrint: true,
     file: {
-      enabled: true,
+      enabled: false,
       path: "logs/server.log",
       maxSize: 10 * 1024 * 1024,
       maxFiles: 5
@@ -38636,9 +38636,13 @@ async function loadConfig() {
   if (existsSync(configPath)) {
     try {
       const file = Bun.file(configPath);
-      fileConfig = await file.json();
+      const content = await file.text();
+      if (content.trim()) {
+        fileConfig = JSON.parse(content);
+      }
     } catch (error) {
       console.warn(`Failed to load config file: ${configPath}`, error);
+      fileConfig = {};
     }
   }
   const allowedDirs = process.env.MCP_ALLOWED_DIRS ? process.env.MCP_ALLOWED_DIRS.split(",").map((d) => d.trim()) : undefined;
@@ -38717,8 +38721,34 @@ async function loadConfig() {
 
 // src/utils/logger.ts
 var import_pino = __toESM(require_pino(), 1);
-import { mkdirSync, existsSync as existsSync2 } from "fs";
+import { mkdirSync, existsSync as existsSync2, accessSync, constants } from "fs";
 import { dirname } from "path";
+function isDirectoryWritable(dirPath) {
+  try {
+    if (existsSync2(dirPath)) {
+      accessSync(dirPath, constants.W_OK);
+      return true;
+    }
+    const parentDir = dirname(dirPath);
+    if (existsSync2(parentDir)) {
+      accessSync(parentDir, constants.W_OK);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+function ensureLogDirectory(logDir) {
+  try {
+    if (!existsSync2(logDir)) {
+      mkdirSync(logDir, { recursive: true });
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 function createLogger(config2) {
   const streams = [];
   if (config2.logging.prettyPrint) {
@@ -38741,16 +38771,18 @@ function createLogger(config2) {
   }
   if (config2.logging.file.enabled) {
     const logDir = dirname(config2.logging.file.path);
-    if (!existsSync2(logDir)) {
-      mkdirSync(logDir, { recursive: true });
+    const canWriteFiles = isDirectoryWritable(logDir) && ensureLogDirectory(logDir);
+    if (canWriteFiles) {
+      try {
+        streams.push({
+          level: config2.logging.level,
+          stream: import_pino.default.destination({
+            dest: config2.logging.file.path,
+            sync: false
+          })
+        });
+      } catch {}
     }
-    streams.push({
-      level: config2.logging.level,
-      stream: import_pino.default.destination({
-        dest: config2.logging.file.path,
-        sync: false
-      })
-    });
   }
   return import_pino.default({
     name: config2.server.name,

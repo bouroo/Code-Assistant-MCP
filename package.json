@@ -1,6 +1,6 @@
 {
   "name": "code-assistant-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Production-ready MCP server for AI coding assistants",
   "module": "dist/index.js",
   "main": "dist/index.js",
